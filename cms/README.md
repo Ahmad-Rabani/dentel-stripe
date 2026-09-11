@@ -32,13 +32,11 @@ npm run build
 yarn build
 ```
 
-## ⚙️ Deployment
+## Deployment
 
-Strapi gives you many possible deployment options for your project including [Strapi Cloud](https://cloud.strapi.io). Browse the [deployment section of the documentation](https://docs.strapi.io/dev-docs/deployment) to find the best solution for your use case.
+This CMS is deployed on **Railway** (Postgres), not Strapi Cloud. The Next.js website is deployed on **Vercel**.
 
-```
-yarn strapi deploy
-```
+Full steps are in the root [README.md](../README.md#10-deploy).
 
 ## 📚 Learn more
 

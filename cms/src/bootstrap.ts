@@ -2,8 +2,8 @@ import fs from "fs";
 import path from "path";
 import type { Core } from "@strapi/strapi";
 
-const ADMIN_EMAIL = "admin@dentel.local";
-const ADMIN_PASSWORD = "DentelAdmin123!";
+const ADMIN_EMAIL = process.env.CMS_ADMIN_EMAIL || "admin@dentel.local";
+const ADMIN_PASSWORD = process.env.CMS_ADMIN_PASSWORD || "DentelAdmin123!";
 const API_TOKEN_NAME = "Dentel website";
 
 const PUBLIC_ACTIONS = [
@@ -40,7 +40,16 @@ function websiteEnvPath() {
 }
 
 function imageDir() {
+  const bundled = path.resolve(process.cwd(), "seed-images");
+  if (fs.existsSync(bundled)) {
+    return bundled;
+  }
+
   return path.resolve(process.cwd(), "..", "public", "images");
+}
+
+function isProduction() {
+  return process.env.NODE_ENV === "production";
 }
 
 function upsertEnv(filePath: string, values: Record<string, string>) {
@@ -144,6 +153,33 @@ async function enablePublicPermissions(strapi: Strapi) {
 }
 
 async function ensureWebsiteToken(strapi: Strapi) {
+  const existing = await strapi.db.query("admin::api-token").findOne({
+    where: { name: API_TOKEN_NAME },
+  });
+
+  if (isProduction()) {
+    if (existing) {
+      strapi.log.info(
+        "Website API token already exists. Set STRAPI_API_TOKEN in Vercel from Strapi Settings → API Tokens if needed.",
+      );
+      return;
+    }
+
+    const created = await strapi.service("admin::api-token").create({
+      name: API_TOKEN_NAME,
+      description: "Server token for the Dentel Next.js website",
+      type: "full-access",
+      lifespan: null,
+    });
+    const accessKey = (created as { accessKey?: string }).accessKey;
+    if (accessKey) {
+      strapi.log.info(
+        `Created API token for Vercel. Copy this into Vercel as STRAPI_API_TOKEN (shown once): ${accessKey}`,
+      );
+    }
+    return;
+  }
+
   const envFile = websiteEnvPath();
   const current = fs.existsSync(envFile) ? fs.readFileSync(envFile, "utf8") : "";
   const hasToken = /^STRAPI_API_TOKEN=.+$/m.test(current);
@@ -157,9 +193,6 @@ async function ensureWebsiteToken(strapi: Strapi) {
     return;
   }
 
-  const existing = await strapi.db.query("admin::api-token").findOne({
-    where: { name: API_TOKEN_NAME },
-  });
   if (existing) {
     strapi.log.warn(
       "API token already exists in Strapi but is missing from .env.local. Create a new token in Settings → API Tokens if needed.",

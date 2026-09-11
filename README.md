@@ -140,10 +140,66 @@ Homepage hero, promo, and CTA copy live on the **Home page** single type. Header
 
 ## 10. Deploy
 
-1. Host Strapi and the Next.js app separately (for example Strapi on a VPS or Strapi Cloud; Next.js on Vercel or any Node host).
-2. Set `NEXT_PUBLIC_STRAPI_URL`, `NEXT_PUBLIC_SITE_URL`, and `STRAPI_API_TOKEN` on the Next.js host.
-3. Allow the Strapi host in `next.config.ts` image `remotePatterns` (localhost and `*.strapiapp.com` are already included; a custom domain is added from `NEXT_PUBLIC_STRAPI_URL` at boot).
-4. Run `npm run build` and `npm start`, or use your platform’s Next.js build.
+Deploy the **website on Vercel** and **Strapi on Railway**. They are two services.
+
+### Strapi on Railway (CMS)
+
+1. Push this repo to GitHub.
+2. Open [railway.com](https://railway.com), New Project → Deploy from GitHub, select this repo.
+3. Set the service **Root Directory** to `cms`.
+4. Add a **PostgreSQL** database to the same project.
+5. In the Strapi service variables, set:
+
+```
+NODE_ENV=production
+DATABASE_CLIENT=postgres
+DATABASE_URL=${{Postgres.DATABASE_URL}}
+DATABASE_SSL=false
+HOST=0.0.0.0
+PORT=1337
+PUBLIC_URL=https://YOUR-SERVICE.up.railway.app
+CORS_ORIGIN=https://YOUR-VERCEL-DOMAIN.vercel.app,http://localhost:3000
+APP_KEYS=four-random-strings,comma,separated,keys
+API_TOKEN_SALT=random
+ADMIN_JWT_SECRET=random
+JWT_SECRET=random
+TRANSFER_TOKEN_SALT=random
+ENCRYPTION_KEY=random
+CMS_ADMIN_EMAIL=admin@dentel.local
+CMS_ADMIN_PASSWORD=choose-a-strong-password
+```
+
+Generate the secret values (PowerShell):
+
+```powershell
+-join ((1..32) | ForEach-Object { '{0:x}' -f (Get-Random -Max 16) })
+```
+
+Run that several times for each secret. `APP_KEYS` needs **four** values, comma-separated.
+
+6. Settings → Networking → **Generate domain**. Put that HTTPS URL in `PUBLIC_URL`.
+7. Settings → Volumes → add a volume mounted at `/app/public/uploads` so images survive deploys.
+8. After the first successful deploy, open `https://YOUR-SERVICE.up.railway.app/admin`.
+9. Create an API token in **Settings → API Tokens** (or copy the one printed once in Railway logs) and keep it for Vercel.
+
+Build: `npm run build`. Start: `npm run start`. Config lives in `cms/railway.toml`.
+
+### Website on Vercel
+
+1. Import the same GitHub repo (root of the project, not `cms`).
+2. Set:
+
+```
+NEXT_PUBLIC_STRAPI_URL=https://YOUR-SERVICE.up.railway.app
+NEXT_PUBLIC_SITE_URL=https://YOUR-VERCEL-DOMAIN.vercel.app
+STRAPI_API_TOKEN=the-token-from-strapi
+```
+
+3. Redeploy. Images from Railway are allowed via `next.config.ts`.
+
+### After both are live
+
+Edit content in the **Railway** Strapi admin → Publish → wait about a minute → refresh the Vercel site. Do not edit localhost Strapi if you want the live site to change.
 
 ## Architecture
 
@@ -166,4 +222,5 @@ The existing App Router + Tailwind setup was kept. There is no `src/` folder bec
 - Journal content is stored as collection type **Article** (`/api/articles`), not `blogs`.
 - Contact form messages are stored in Strapi when it is connected. The app does not send email on its own.
 - Preview catalog images are loaded from `/public/images` only when Strapi is not configured.
-- Local Strapi lives in `cms/` and uses SQLite (`.tmp/data.db`). Do not commit `.env` files.
+- Local Strapi lives in `cms/` and uses SQLite (`.tmp/data.db`). Production on Railway uses Postgres.
+- Do not commit `.env` files. Do not run `npm install --prefix cms` from the website root.

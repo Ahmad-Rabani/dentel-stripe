@@ -20,6 +20,11 @@ function strapiRemotePatterns() {
       protocol: "https",
       hostname: "**.media.strapiapp.com",
     },
+    {
+      protocol: "https",
+      hostname: "**.up.railway.app",
+      pathname: "/uploads/**",
+    },
   ];
 
   const strapiUrl = process.env.NEXT_PUBLIC_STRAPI_URL;

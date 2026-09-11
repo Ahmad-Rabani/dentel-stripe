@@ -3,7 +3,10 @@ import type { Core } from '@strapi/strapi';
 import { isDatabaseClientKind } from '@strapi/database';
 
 const config = ({ env }: Core.Config.Shared.ConfigParams): Core.Config.Database => {
-  const client = env('DATABASE_CLIENT', 'sqlite');
+  const client = env(
+    'DATABASE_CLIENT',
+    env('DATABASE_URL') ? 'postgres' : 'sqlite',
+  );
 
   if (!isDatabaseClientKind(client)) {
     throw new Error(
@@ -46,7 +49,7 @@ const config = ({ env }: Core.Config.Shared.ConfigParams): Core.Config.Database 
           ca: env('DATABASE_SSL_CA', undefined),
           capath: env('DATABASE_SSL_CAPATH', undefined),
           cipher: env('DATABASE_SSL_CIPHER', undefined),
-          rejectUnauthorized: env.bool('DATABASE_SSL_REJECT_UNAUTHORIZED', true),
+          rejectUnauthorized: env.bool('DATABASE_SSL_REJECT_UNAUTHORIZED', false),
         },
         schema: env('DATABASE_SCHEMA', 'public'),
       },
