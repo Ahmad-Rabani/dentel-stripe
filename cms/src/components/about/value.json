@@ -1,0 +1,18 @@
+{
+  "collectionName": "components_about_values",
+  "info": {
+    "displayName": "Value",
+    "icon": "star"
+  },
+  "options": {},
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "body": {
+      "type": "text",
+      "required": true
+    }
+  }
+}

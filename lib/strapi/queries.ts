@@ -48,7 +48,6 @@ const articlePopulate = {
   author: {
     populate: ["avatar"],
   },
-  category: true,
 };
 
 function previewMeta(): CmsQueryMeta {

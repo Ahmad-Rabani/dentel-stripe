@@ -1,6 +1,19 @@
 # Strapi content model for Dentel
 
-Configure these types in Strapi, then point `NEXT_PUBLIC_STRAPI_URL` at the CMS. Field names below are the API names the Next.js app reads. Optional fields can be omitted; the frontend will skip them.
+This repository already includes a Strapi 5 app in `cms/`. From the project root:
+
+```bash
+npm run cms
+```
+
+That command starts [http://localhost:1337/admin](http://localhost:1337/admin), creates the types below, seeds published starter content, and writes `NEXT_PUBLIC_STRAPI_URL` plus `STRAPI_API_TOKEN` into `.env.local`.
+
+Local admin login:
+
+- Email: `admin@dentel.local`
+- Password: `DentelAdmin123!`
+
+If you use a hosted Strapi instead, recreate these types there, then point `NEXT_PUBLIC_STRAPI_URL` at that origin. Field names below are the API names the Next.js app reads. Optional fields can be omitted; the frontend will skip them.
 
 The app understands both Strapi 4 (`data.attributes`) and Strapi 5 (flattened documents).
 

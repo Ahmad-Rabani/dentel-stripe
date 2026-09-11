@@ -44,6 +44,7 @@ function strapiRemotePatterns() {
 
 const nextConfig: NextConfig = {
   images: {
+    dangerouslyAllowLocalIP: true,
     remotePatterns: strapiRemotePatterns(),
   },
 };

@@ -8,15 +8,29 @@ The app uses the **App Router**, **TypeScript**, and **Tailwind CSS v4**. Conten
 
 ```bash
 npm install
+npm --prefix cms install
 ```
 
-## 2. Start Next.js
+## 2. Start the website and CMS
+
+This repo includes a local Strapi app in `cms/`. Run both from the project root, in two terminals:
 
 ```bash
+npm run cms
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000).
+- Website: [http://localhost:3000](http://localhost:3000)
+- Strapi admin: [http://localhost:1337/admin](http://localhost:1337/admin)
+
+The first `npm run cms` start creates the admin user, public API permissions, starter catalog, and writes `.env.local` for Next.js.
+
+Local admin login:
+
+- Email: `admin@dentel.local`
+- Password: `DentelAdmin123!`
+
+Change that password in Strapi after the first login.
 
 Other useful scripts:
 
@@ -24,11 +38,14 @@ Other useful scripts:
 npm run lint
 npm run build
 npm start
+npm run cms:start
 ```
+
+Restart `npm run dev` after `.env.local` changes.
 
 ## 3. Configure environment variables
 
-Copy the example file:
+`.env.local` is created automatically the first time Strapi starts. You can also copy the example file:
 
 ```bash
 cp .env.example .env.local
@@ -38,23 +55,17 @@ Variables:
 
 | Name | Where it is used | Notes |
 | --- | --- | --- |
-| `NEXT_PUBLIC_STRAPI_URL` | Server fetch + `next/image` remote host | Public. Example: `http://localhost:1337`. Leave empty to use preview content. |
+| `NEXT_PUBLIC_STRAPI_URL` | Server fetch + `next/image` remote host | Public. Local default: `http://localhost:1337`. Leave empty to use preview content. |
 | `NEXT_PUBLIC_SITE_URL` | Canonical URLs, sitemap, Open Graph | Public. Example: `http://localhost:3000`. |
-| `STRAPI_API_TOKEN` | Server-only Authorization header | **Private.** Never prefix this with `NEXT_PUBLIC_`. |
+| `STRAPI_API_TOKEN` | Server-only Authorization header | **Private.** Never prefix this with `NEXT_PUBLIC_`. Written by Strapi on first boot. |
 
 `.env*` files are gitignored. `.env.example` is the only env file that should be committed.
 
-Restart `npm run dev` after changing env vars.
+## 4. How Strapi is connected
 
-## 4. Start / connect Strapi
+The content types, permissions, and seed data already live in `cms/`. A field-by-field reference is in [docs/STRAPI.md](docs/STRAPI.md).
 
-1. Run Strapi locally (default `http://localhost:1337`) or use a hosted Strapi project.
-2. Create the content types listed below. A field-by-field guide lives in [docs/STRAPI.md](docs/STRAPI.md).
-3. Set `NEXT_PUBLIC_STRAPI_URL` to that origin **without a trailing slash**.
-4. Create an API token in Strapi (**Settings → API Tokens**) with read access to the public content types, plus create access for `contact-submissions` if you want the contact form to store messages.
-5. Put the token in `STRAPI_API_TOKEN`.
-
-When the URL is set, the site talks only to Strapi. If Strapi is down, collection pages show a calm empty/error state instead of crashing.
+When `NEXT_PUBLIC_STRAPI_URL` is set, the site talks only to Strapi. If Strapi is down, collection pages show a calm empty/error state instead of crashing.
 
 ## 5. Required Strapi content types
 
@@ -154,4 +165,5 @@ The existing App Router + Tailwind setup was kept. There is no `src/` folder bec
 - Strapi 4 or 5 REST APIs both work; the normalize layer unwraps `data.attributes` and flattened Strapi 5 documents.
 - Journal content is stored as collection type **Article** (`/api/articles`), not `blogs`.
 - Contact form messages are stored in Strapi when it is connected. The app does not send email on its own.
-- Preview catalog images are loaded from Unsplash only when Strapi is not configured.
+- Preview catalog images are loaded from `/public/images` only when Strapi is not configured.
+- Local Strapi lives in `cms/` and uses SQLite (`.tmp/data.db`). Do not commit `.env` files.
